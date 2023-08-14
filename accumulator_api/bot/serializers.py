@@ -7,6 +7,7 @@ class AccumulationSerializer(serializers.Serializer):
     chat_id = serializers.IntegerField()
 
     price = serializers.IntegerField()
+    count = serializers.IntegerField()
     type = serializers.CharField(max_length=255)
     description = serializers.CharField(max_length=255, required=False)
 

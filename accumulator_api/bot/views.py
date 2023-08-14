@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 
 from bot.serializers import AccumulationSerializer
-from core.services.accumulation import load_object, BankAccumulation, BaseAccumulation
+from core.services.accumulation import load_object, Accumulation
 from core.services.models import AccumulationModel
 
 
@@ -36,21 +36,13 @@ class AccumulationView(APIView):
 
         data = serializer.validated_data
         
-        if data.get('type') == 'bank':
-            BankAccumulation(
-                data.get('chat_id'),
-                data.get('type'),
-                data.get('price'),
-                data.get('account_id'),
-                description = data.get('description'),
-            ).save()
-        else:
-            BaseAccumulation(
-                data.get('chat_id'),
-                data.get('type'),
-                data.get('price'), 
-                description = data.get('description'),
-            ).save()
+        Accumulation(
+            data.get('chat_id'),
+            data.get('type'),
+            data.get('price'),
+            count = data.get('count'), 
+            description = data.get('description'),
+        ).save()
 
         return Response(status=201)
 

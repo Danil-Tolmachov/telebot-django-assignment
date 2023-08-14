@@ -21,6 +21,11 @@ class AbstractAccumulation(ABC):
     def price(self):
         pass
 
+    @property
+    @abstractmethod
+    def count(self):
+        pass
+
 
     @abstractmethod
     def save():

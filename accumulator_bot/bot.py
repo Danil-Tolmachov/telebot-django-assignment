@@ -48,7 +48,7 @@ def button_handler(message):
 
         # Item list
         for item in data:
-            summary += item['price']
+            summary += int(item['price']) * int(item['count'])
             msg_str += services.create_item_message(item) + '\n'
 
         # Statistics
@@ -94,21 +94,18 @@ def process_type(message):
     user_data[str(message.chat.id)] = {}
     user_data[str(message.chat.id)]['type'] = message.text
     
-    if message.text == 'bank':
-        msg = bot.send_message(message.chat.id, 'Enter bank account number:')
-        bot.register_next_step_handler(msg, process_account_id)
-    else:
-        msg = bot.send_message(message.chat.id, 'Enter price:')
-        bot.register_next_step_handler(msg, process_price)
-
-def process_account_id(message):
-    user_data[str(message.chat.id)]['account_id'] = message.text
-
     msg = bot.send_message(message.chat.id, 'Enter price:')
     bot.register_next_step_handler(msg, process_price)
 
+
 def process_price(message):
     user_data[str(message.chat.id)]['price'] = message.text
+
+    msg = bot.send_message(message.chat.id, 'Enter count:')
+    bot.register_next_step_handler(msg, process_count)
+
+def process_count(message):
+    user_data[str(message.chat.id)]['count'] = message.text
 
     msg = bot.send_message(message.chat.id, 'Enter description:')
     bot.register_next_step_handler(msg, process_description)
@@ -123,6 +120,7 @@ def process_description(message):
         form.get('price'),
         form.get('account_id'),
         form.get('description'),
+        count = form.get('count')
     )
 
     del user_data[str(message.chat.id)]

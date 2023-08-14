@@ -53,14 +53,15 @@ class DefaultClient(AbstractClient, Singletron):
         else:
             return None
 
-    def add_new_accumulation(self, chat_id, type: str, price: int, account_id = None, description = None) -> bool:
+    def add_new_accumulation(self, chat_id, type: str, price: int, account_id = None, description = None, count = 1) -> bool:
         headers = {'Authorization': str(chat_id)}
         body = {
             'chat_id': chat_id,
             'type': type,
             'price': price,
             'account_id': account_id,
-            'description': description,  
+            'description': description,
+            'count': count
         }
         data = requests.post(self.API_URL + f'accumulation/', data=body, headers=headers)
         
@@ -82,13 +83,12 @@ def create_item_message(data: dict):
     pk = data.get('pk')
     type = data.get('type')
     price = data.get('price')
-    account_id = data.get('account_id')
+    count = data.get('count')
     descriprion = data.get('description')
     
     descriprion_field = f'Description: {descriprion}\n' if descriprion is not None else ''
-    account_field = f'Account id: {account_id}\n' if account_id is not None else ''
 
-    return f'Id: {pk}\nType: {type}\nPrice: {price}\n' + account_field + descriprion_field
+    return f'Id: {pk}\nType: {type}\nPrice: {price}\nCount: {count}\n' + descriprion_field
 
 client = DefaultClient()
 print(client.get_accumulation_list(chat_id=470994972))

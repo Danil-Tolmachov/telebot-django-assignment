@@ -4,13 +4,14 @@ from django.utils import timezone
 from datetime import datetime
 
 
-class BaseAccumulation(AbstractAccumulation):
+class Accumulation(AbstractAccumulation):
 
-    def __init__(self, chat_id: int, type: str, price: int, description = None) -> None:
+    def __init__(self, chat_id: int, type: str, price: int, description = None, count = 1) -> None:
         self.creation_date = timezone.now()
         self.chat_id = chat_id
 
         self.price = price
+        self.count = count
         self._type = type
 
         self.description = description
@@ -46,6 +47,14 @@ class BaseAccumulation(AbstractAccumulation):
     def price(self, num: int):
         self._price = num
 
+    @property
+    def count(self):
+        return self._count
+    
+    @count.setter
+    def count(self, var):
+        self._count = var
+
 
     def get_price(self) -> int:
         return self.price
@@ -62,38 +71,9 @@ class BaseAccumulation(AbstractAccumulation):
             price = self.price,
             creation_date = self.creation_date,
             description = self.description,
+            count = self.count,
             type = self._type,
         )
-
-
-
-class BankAccumulation(BaseAccumulation):
-    
-    def __init__(self, chat_id: int, type: str, price: int, account_id, description=None) -> None:
-        super().__init__(chat_id, type, price, description = description)
-        self._account = account_id
-        self._type = 'bank'
-
-    def get_account_id(self):
-        """
-            Get bank account id
-        """
-        return self._account
-
-    def save(self):
-        """
-            Save object to database
-        """
-        return AccumulationModel.objects.create(
-            chat_id = self.chat_id,
-            price = self.price,
-            creation_date = self.creation_date,
-            description = self.description,
-            type = self._type,
-            account_id = self._account,
-        )
-
-    # Extendable statytics
 
 
 def load_object(obj_id: int) -> AbstractAccumulation:
@@ -107,21 +87,14 @@ def load_object(obj_id: int) -> AbstractAccumulation:
             AbstractAccumulation: An instance of a subclass of AbstractAccumulation
                                   based on the type field of the database record.
     """
-    obj = AccumulationModel.objects.get(obj_id)
+    record = AccumulationModel.objects.get(obj_id)
 
-    if obj.type == 'bank':
-        BankAccumulation(
-            obj.chat_id, 
-            obj.type, 
-            obj.price,
-            obj.account_id,
-            description=obj.description
-            )
-    # Extendable
-    else:
-        BaseAccumulation(
-            obj.chat_id, 
-            obj.type, 
-            obj.price,
-            description=obj.description
-            )
+    obj = Accumulation(
+        record.chat_id, 
+        record.type, 
+        record.price,
+        record.count,
+        description=record.description
+        )
+    
+    return obj
