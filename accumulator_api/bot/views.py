@@ -21,7 +21,11 @@ class AccumulationView(APIView):
         except:
             return Response(status=404)
         
+        if str(request.chat_id) != str(obj.chat_id):
+            return Response(status=403)
+        
         serializer = AccumulationSerializer(obj)
+
         return Response(serializer.data)
     
     def post(self, request):
@@ -29,7 +33,7 @@ class AccumulationView(APIView):
 
         if serializer.is_valid() == False:
             return Response(data="Invalid data",status=400)
-        
+
         data = serializer.validated_data
         
         if data.get('type') == 'bank':
@@ -51,7 +55,18 @@ class AccumulationView(APIView):
         return Response(status=201)
 
     def delete(self, request):
-        pass
+        record_id = request.query_params.get('record-id')
+        
+        try:
+            obj = AccumulationModel.objects.get(pk=record_id)
+        except:
+            return Response(status=404)
+        
+        if str(request.chat_id) != str(obj.chat_id):
+            return Response(status=403)
+        
+        obj.delete()
+        return Response(status=201)
 
 
 @api_view(["GET"])

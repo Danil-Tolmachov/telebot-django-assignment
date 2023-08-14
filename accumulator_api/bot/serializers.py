@@ -3,6 +3,7 @@ from core.services.models import AccumulationModel
 
 
 class AccumulationSerializer(serializers.Serializer):
+    pk = serializers.IntegerField(required=False)
     chat_id = serializers.IntegerField()
 
     price = serializers.IntegerField()

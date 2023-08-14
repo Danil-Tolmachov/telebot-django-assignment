@@ -2,13 +2,17 @@ import os
 import telebot
 from dotenv import load_dotenv
 
+import services
+
 
 # Load environment variables
 load_dotenv('../.env')
 token = os.environ.get('BOT_TOKEN')
 
-# Init bot
+# Initialization
 bot = telebot.TeleBot(token)
+client = services.DefaultClient() # api client
+user_data = {}
 
 
 # Welcome Handler
@@ -32,16 +36,104 @@ def button_handler(message):
 
     if message.text == 'Statistic':
         print(f'LOG: Statistic request at {message.chat.id}')
-        pass # TODO: Implement
+
+        # Get data
+        data = client.get_accumulation_list(message.chat.id)
+        msg_str = ''
+        summary = 0
+
+        # Item list
+        for item in data:
+            summary += item['price']
+            msg_str += services.create_item_message(item) + '\n'
+
+        # Statistics
+        msg_str += 'Sum: ' + str(summary)
+
+        # Send message
+        msg = bot.send_message(message.chat.id, msg_str)
+
+        bot.register_next_step_handler(msg, statictic_handler)
 
     if message.text == 'Add':
         print(f'LOG: Add request at {message.chat.id}')
-        pass # TODO: Implement
+        msg = bot.send_message(message.chat.id, 'Send me some information!\n\nType(bank or anything else):')
+        bot.register_next_step_handler(msg, process_type)
+        
 
     if message.text == 'Delete':
         print(f'LOG: Delete request at {message.chat.id}')
-        pass # TODO: Implement
+        msg = bot.send_message(message.chat.id, 'Enter item id to delete:')
+        bot.register_next_step_handler(msg, process_delete)
 
+
+def statictic_handler(message):
+    try:
+        id = int(message.text)
+    except ValueError:
+        return
+    
+    data = client.get_accumulation(message.chat.id, id)
+
+    if data is None:
+        bot.send_message(message.chat.id, 'Something went wrong')
+
+    msg = services.create_item_message(data)
+
+    bot.send_message(message.chat.id, msg)
+    
+    
+
+
+def process_type(message):
+    user_data[str(message.chat.id)] = {}
+    user_data[str(message.chat.id)]['type'] = message.text
+    
+    if message.text == 'bank':
+        msg = bot.send_message(message.chat.id, 'Enter bank account number:')
+        bot.register_next_step_handler(msg, process_account_id)
+    else:
+        msg = bot.send_message(message.chat.id, 'Enter price:')
+        bot.register_next_step_handler(msg, process_price)
+
+def process_account_id(message):
+    user_data[str(message.chat.id)]['account_id'] = message.text
+
+    msg = bot.send_message(message.chat.id, 'Enter price:')
+    bot.register_next_step_handler(msg, process_price)
+
+def process_price(message):
+    user_data[str(message.chat.id)]['price'] = message.text
+
+    msg = bot.send_message(message.chat.id, 'Enter description:')
+    bot.register_next_step_handler(msg, process_description)
+
+def process_description(message):
+    user_data[str(message.chat.id)]['description'] = message.text
+    form = user_data[str(message.chat.id)]
+
+    result = client.add_new_accumulation(
+        message.chat.id,
+        form.get('type'),
+        form.get('price'),
+        form.get('account_id'),
+        form.get('description'),
+    )
+
+    del user_data[str(message.chat.id)]
+
+    if result == False:
+        bot.send_message(message.chat.id, 'Something went wrong')
+    else:
+        bot.send_message(message.chat.id, 'Successful!')
+
+
+def process_delete(message):
+
+    if client.delete_accumulation(message.chat.id, message.text) == True:
+        bot.send_message(message.chat.id, 'Success')
+    else:
+        bot.send_message(message.chat.id, 'Invalid id')
 
 
 if __name__ == '__main__':
