@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class AbstractAccumulation(ABC):
+    """
+        Abstraction of accumulation item
+    """
 
     @property
     @abstractmethod
@@ -12,13 +15,13 @@ class AbstractAccumulation(ABC):
     @abstractmethod
     def creation_date(self):
         pass
-    
+
     @property
     @abstractmethod
     def price(self):
         pass
 
-    
+
     @abstractmethod
     def save():
         pass

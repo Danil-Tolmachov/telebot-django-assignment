@@ -3,6 +3,7 @@ from core.services.models import AccumulationModel
 from django.utils import timezone
 from datetime import datetime
 
+
 class BaseAccumulation(AbstractAccumulation):
 
     def __init__(self, chat_id: int, type: str, price: int, description = None) -> None:
@@ -13,13 +14,13 @@ class BaseAccumulation(AbstractAccumulation):
         self._type = type
 
         self.description = description
-        
+
         super().__init__()
 
     @property
     def description(self):
         return self._description
-    
+
     @description.setter
     def description(self, var):
         self._description = var
@@ -35,7 +36,7 @@ class BaseAccumulation(AbstractAccumulation):
             self._creation_date = var
         else:
             raise ValueError('Use "datetime" object for creation_date property')
-    
+
 
     @property
     def price(self):
@@ -51,8 +52,11 @@ class BaseAccumulation(AbstractAccumulation):
 
     def get_type(self) -> str:
         return self._type
-    
+
     def save(self):
+        """
+            Save object to database
+        """
         return AccumulationModel.objects.create(
             chat_id = self.chat_id,
             price = self.price,
@@ -71,9 +75,15 @@ class BankAccumulation(BaseAccumulation):
         self._type = 'bank'
 
     def get_account_id(self):
+        """
+            Get bank account id
+        """
         return self._account
-    
+
     def save(self):
+        """
+            Save object to database
+        """
         return AccumulationModel.objects.create(
             chat_id = self.chat_id,
             price = self.price,
@@ -86,7 +96,17 @@ class BankAccumulation(BaseAccumulation):
     # Extendable statytics
 
 
-def load_object(obj_id: int):
+def load_object(obj_id: int) -> AbstractAccumulation:
+    """
+        Load a database record and convert it to a class object.
+
+        Args:
+            obj_id (int): The ID of the object to load from the database.
+
+        Returns:
+            AbstractAccumulation: An instance of a subclass of AbstractAccumulation
+                                  based on the type field of the database record.
+    """
     obj = AccumulationModel.objects.get(obj_id)
 
     if obj.type == 'bank':
