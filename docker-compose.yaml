@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  api:
+    build:
+      dockerfile: accumulator_api/Dockerfile
+      context: ./
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+  bot:
+    build:
+      dockerfile: accumulator_bot/Dockerfile
+      context: ./
+    command: python ./bot.py
+    env_file:
+      - .env
+
   postgres:
     image: postgres:latest
     container_name: accumulation_db

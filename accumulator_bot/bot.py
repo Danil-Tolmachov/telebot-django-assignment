@@ -42,6 +42,10 @@ def button_handler(message):
         msg_str = ''
         summary = 0
 
+        if data is None or data == []:
+            bot.send_message(message.chat.id, 'There is nothing yet')
+            return
+
         # Item list
         for item in data:
             summary += item['price']
@@ -54,6 +58,7 @@ def button_handler(message):
         msg = bot.send_message(message.chat.id, msg_str)
 
         bot.register_next_step_handler(msg, statictic_handler)
+        bot.send_message(message.chat.id, 'Send me an id to look closer')
 
     if message.text == 'Add':
         print(f'LOG: Add request at {message.chat.id}')

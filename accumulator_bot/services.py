@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import requests
+import os
 import json
 
 
@@ -32,7 +33,7 @@ class AbstractClient(ABC):
 
 
 class DefaultClient(AbstractClient, Singletron):
-    API_URL = 'http://localhost:8000/'
+    API_URL = os.environ.get('API_URL') or 'http://localhost:8000/'
     
     def get_accumulation_list(self, chat_id) -> dict:
         headers = {'Authorization': str(chat_id)}
@@ -88,3 +89,6 @@ def create_item_message(data: dict):
     account_field = f'Account id: {account_id}\n' if account_id is not None else ''
 
     return f'Id: {pk}\nType: {type}\nPrice: {price}\n' + account_field + descriprion_field
+
+client = DefaultClient()
+print(client.get_accumulation_list(chat_id=470994972))
